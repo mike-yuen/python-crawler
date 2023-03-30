@@ -193,13 +193,13 @@ For web crawling, Scrapy is a popular Python-based framework that provides flexi
 Ultimately, the choice of data extraction or web crawling tool should be based on the specific requirements of the project and the expertise of the user. A combination of tools may be used to achieve the best results.
 
 ## References
-Scrapy: https://scrapy.org/
-BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-Selenium: https://www.selenium.dev/
-Apache Nutch: http://nutch.apache.org/
-Octoparse: https://www.octoparse.com/
-ParseHub: https://www.parsehub.com/
-Import.io: https://www.import.io/
-WebHarvy: https://www.webharvy.com/
-PyQuery: https://pythonhosted.org/pyquery/
-lxml: https://lxml.de/
+- Scrapy: https://scrapy.org/
+- BeautifulSoup: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+- Selenium: https://www.selenium.dev/
+- Apache Nutch: http://nutch.apache.org/
+- Octoparse: https://www.octoparse.com/
+- ParseHub: https://www.parsehub.com/
+- Import.io: https://www.import.io/
+- WebHarvy: https://www.webharvy.com/
+- PyQuery: https://pythonhosted.org/pyquery/
+- lxml: https://lxml.de/
