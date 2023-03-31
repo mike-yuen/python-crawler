@@ -16,8 +16,11 @@ class VnexpressSpider(scrapy.Spider):
 
     def parse(self, response):
         item = ArticleItem()
-        # item['url'] = response.url.split("/")[-1]
         item['title'] = response.xpath(
             '//h1[@class="title-detail"]/text()').get()
-        item['content'] = response.css('.fck_detail p::text').getall()
+        item['content'] = "".join(response.css(
+            '.fck_detail > p::text').getall())
+        item['url'] = response.url
+        item['author'] = "".join(response.css(
+            '.fck_detail > p')[-1].css('p ::text').getall())
         yield (item)
