@@ -8,6 +8,7 @@
 from itemadapter import ItemAdapter
 
 
-class ScrapyCrawlerPipeline:
+class ScrapyVnexpressPipeline:
     def process_item(self, item, spider):
+        item.save()  # save it to database
         return item
