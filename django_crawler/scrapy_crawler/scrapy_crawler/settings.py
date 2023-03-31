@@ -96,7 +96,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 sys.path.append(os.path.join(os.getcwd(), "../../django_crawler"))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'django_crawler.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'configs.settings'
 # If you you use django outside of manage.py context, you
 # need to explicitly setup the django
 django.setup()

@@ -1,4 +1,5 @@
 import scrapy
+from django_app.models import Article
 
 
 class VnexpressSpider(scrapy.Spider):
@@ -13,7 +14,17 @@ class VnexpressSpider(scrapy.Spider):
     #     self.start_urls = [self.url]
     #     self.allowed_domains = [self.domain]
 
-    def parse(self, response):
+    async def parse(self, response):
+        existing_article = Article.objects.filter(
+            title="Test Title",
+            content="Test Content"
+        )
+        if not await existing_article.aexists():
+            article = await Article.objects.acreate(
+                title="Test Title",
+                content="Test Content"
+            )
+            print(f"Created new article: {article.title}")
         url = response.url.split("/")[-1]
         heading = response.xpath(
             '//h1[@class="title-detail"]/text()').get()
