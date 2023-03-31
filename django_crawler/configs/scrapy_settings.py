@@ -12,8 +12,8 @@ import os
 import sys
 BOT_NAME = "scrapy_crawler"
 
-SPIDER_MODULES = ["scrapy_crawler.spiders"]
-NEWSPIDER_MODULE = "scrapy_crawler.spiders"
+SPIDER_MODULES = ["spiders"]
+NEWSPIDER_MODULE = "spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -95,7 +95,7 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-sys.path.append(os.path.join(os.getcwd(), "../../django_crawler"))
+sys.path.append(os.path.join(os.getcwd(), "scrapy_crawler"))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'configs.settings'
 # If you you use django outside of manage.py context, you
 # need to explicitly setup the django
