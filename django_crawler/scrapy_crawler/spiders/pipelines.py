@@ -6,9 +6,16 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from spiders.items import ArticleItem, CategoryItem
 
 
 class ScrapyVnexpressPipeline:
     def process_item(self, item, spider):
-        item.save()  # save it to database
-        return item
+        if (isinstance(item, ArticleItem)):
+            categories = item['categories']
+            model = item.save()
+            for category in categories:
+                model.categories.add(category)
+        else:
+            item.save()  # save it to database
+            return item

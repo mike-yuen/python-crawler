@@ -1,5 +1,6 @@
 from typing import List
-from spiders.items import ArticleItem
+from django_app.models import Category
+from spiders.items import ArticleItem, CategoryItem
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from datetime import datetime
@@ -34,10 +35,27 @@ class VnexpressSpider(scrapy.Spider):
         # Must use Selenium here, ul.sub only appears after the browser's popped up
         menu_elements = self.driver.find_elements(By.CSS_SELECTOR,
                                                   ".main-nav > ul > li.kinhdoanh ul.sub > li")
+
+        parent_category_item = CategoryItem()
+        parent_category_item['title'] = "Kinh doanh"
+        parent_category_item['slug'] = "kinh-doanh"
+        yield (parent_category_item)
+
         url_list: List[str] = []
+        parent_category = Category.objects.filter(
+            slug="kinh-doanh").first()
+
         for element in menu_elements:
-            url_list.append(element.find_element(
-                By.TAG_NAME, "a").get_attribute("href"))
+            url = element.find_element(
+                By.TAG_NAME, "a").get_attribute("href")
+
+            category_item = CategoryItem()
+            category_item['title'] = element.find_element(
+                By.TAG_NAME, "a").get_attribute("title")
+            category_item['slug'] = url.split("/")[-1]
+            category_item['parent'] = parent_category
+            yield (category_item)
+            url_list.append(url)
 
         for url in url_list:
             yield scrapy.Request(url, callback=self.parse_page)
@@ -51,16 +69,18 @@ class VnexpressSpider(scrapy.Spider):
             article_url_list.append(element.find_element(
                 By.CSS_SELECTOR, ".thumb-art > a").get_attribute("href"))
 
+        categories_str = response.url.split('/')[-2:]
+        categories = Category.objects.filter(slug__in=categories_str)
         for url in article_url_list:
             if not self.is_ads(url):
-                yield scrapy.Request(url, callback=self.parse_article)
+                yield response.follow(url, callback=self.parse_article, meta={'categories': categories})
 
     def parse_article(self, response):
         item = ArticleItem()
         item['title'] = response.xpath(
             '//h1[@class="title-detail"]/text()').get()
         item['content'] = "".join(response.css(
-            '.fck_detail > p::text').getall())
+            '.fck_detail > p')[:-1].css('p ::text').getall())
         item['url'] = response.url
         item['author'] = "".join(response.css(
             '.fck_detail > p')[-1].css('p ::text').getall())
@@ -71,4 +91,5 @@ class VnexpressSpider(scrapy.Spider):
         raw_date = ', '.join(raw_date)
         datetime_object = self.format_raw_date(raw_date)
         item['published_date'] = datetime_object
+        item['categories'] = response.meta.get("categories")
         yield (item)
