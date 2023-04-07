@@ -12,6 +12,13 @@ import os
 import sys
 BOT_NAME = "scrapy_crawler"
 
+ROTATING_PROXY_LIST = [
+    '210.148.141.3:8080',  # Japan
+    '140.238.245.116:8100',  # India
+    '195.201.31.132:8080',  # Germany
+    '162.55.172.47:8080',  # Germany
+    '49.12.191.64:8080',  # Germany
+]
 SPIDER_MODULES = ["spiders"]
 NEWSPIDER_MODULE = "spiders"
 
@@ -53,9 +60,11 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    "scrapy_crawler.middlewares.ScrapyCrawlerDownloaderMiddleware": 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+    # "scrapy_crawler.middlewares.ScrapyCrawlerDownloaderMiddleware": 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

@@ -6,6 +6,7 @@ from selenium import webdriver
 from datetime import datetime
 import scrapy
 import logging
+import time
 
 from selenium.webdriver.remote.remote_connection import LOGGER
 # Prevent the extremely long logs from Selenium remote_connection logger
@@ -72,10 +73,21 @@ class VnexpressSpider(scrapy.Spider):
                 article_url_list.append(url_element.get_attribute("href"))
 
         categories_str = response.url.split('/')[-2:]
-        categories = Category.objects.filter(slug__in=categories_str)
+        categories = response.meta.get("categories") if response.meta.get(
+            "categories") else Category.objects.filter(slug__in=categories_str)
+
         for url in article_url_list:
             if not self.is_ads(url):
+                time.sleep(0.3)
                 yield response.follow(url, callback=self.parse_article, meta={'categories': categories})
+
+        # Follow next page
+        next_page = response.css(
+            '#pagination a.next-page::attr(href)').extract()
+        if next_page:
+            next_href = next_page[0]
+            next_page_url = MAIN_URL + next_href
+            yield response.follow(url=next_page_url, callback=self.parse_page, meta={'categories': categories})
 
     def parse_article(self, response):
         item = ArticleItem()
