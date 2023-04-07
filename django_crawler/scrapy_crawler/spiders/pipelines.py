@@ -6,6 +6,7 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+from django_app.models import Article, Category
 from spiders.items import ArticleItem, CategoryItem
 
 
@@ -16,6 +17,8 @@ class ScrapyVnexpressPipeline:
             model = item.save()
             for category in categories:
                 model.categories.add(category)
-        else:
-            item.save()  # save it to database
-            return item
+        elif (isinstance(item, CategoryItem)):
+            if Category.objects.filter(slug=item['slug']).exists():
+                return
+            item.save()
+        return item

@@ -1,5 +1,5 @@
 from typing import List
-from django_app.models import Category
+from django_app.models import Article, Category
 from spiders.items import ArticleItem, CategoryItem
 from selenium.webdriver.common.by import By
 from selenium import webdriver
@@ -28,7 +28,7 @@ class VnexpressSpider(scrapy.Spider):
         return datetime_object
 
     def is_ads(self, url):
-        return url.index(MAIN_URL) != 0
+        return url.find(MAIN_URL) != 0
 
     def parse(self, response):
         self.driver.get(response.url)
@@ -66,8 +66,10 @@ class VnexpressSpider(scrapy.Spider):
                                                      "article.item-news")
         article_url_list: List[str] = []
         for element in article_elements:
-            article_url_list.append(element.find_element(
-                By.CSS_SELECTOR, ".thumb-art > a").get_attribute("href"))
+            url_element = element.find_element(
+                By.CSS_SELECTOR, ".thumb-art > a")
+            if url_element:
+                article_url_list.append(url_element.get_attribute("href"))
 
         categories_str = response.url.split('/')[-2:]
         categories = Category.objects.filter(slug__in=categories_str)
@@ -77,19 +79,32 @@ class VnexpressSpider(scrapy.Spider):
 
     def parse_article(self, response):
         item = ArticleItem()
-        item['title'] = response.xpath(
-            '//h1[@class="title-detail"]/text()').get()
-        item['content'] = "".join(response.css(
-            '.fck_detail > p')[:-1].css('p ::text').getall())
         item['url'] = response.url
-        item['author'] = "".join(response.css(
-            '.fck_detail > p')[-1].css('p ::text').getall())
 
-        raw_date = response.css(
-            '.header-content .date::text').get().split(', ')[1:]
-        raw_date[1] = raw_date[1].replace("GMT+7", "+0700")
-        raw_date = ', '.join(raw_date)
-        datetime_object = self.format_raw_date(raw_date)
-        item['published_date'] = datetime_object
+        # Check if a record with a specific field value already exists
+        if Article.objects.filter(url=item['url']).exists():
+            return
+
+        raw_title_element = response.xpath(
+            '//h1[@class="title-detail"]/text()') or response.xpath(
+            '//h1[@class="title-post"]/text()')
+        item['title'] = raw_title_element.get()
+
+        item['content'] = "".join(response.css(
+            '.fck_detail p:not([style*="text-align:right;"])')[:-1].css('p ::text').getall())
+
+        raw_authur = response.css('.fck_detail p.author_mail') or response.css('.fck_detail p.Normal[align="right"]') or response.css(
+            '.fck_detail p.Normal[style*="text-align:right;"]') or response.css('.fck_detail p[style*="text-align:right;"]')
+        if raw_authur:
+            item['author'] = "".join(raw_authur[-1].css('p ::text').getall())
+
+        raw_date_element = response.css('.header-content .date::text')
+        if raw_date_element:
+            raw_date = raw_date_element.get().split(', ')[1:]
+            raw_date[1] = raw_date[1].replace("GMT+7", "+0700")
+            raw_date = ', '.join(raw_date)
+            datetime_object = self.format_raw_date(raw_date)
+            item['published_date'] = datetime_object
+
         item['categories'] = response.meta.get("categories")
         yield (item)
